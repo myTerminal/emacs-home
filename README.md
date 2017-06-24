@@ -6,9 +6,9 @@
 
 A home-screen for Emacs
 
-*emacs-home* can be used to display a few widgets on a 'home-screen', which can be summoned on the press of a key-binding.
-
 ![Demo](images/demo.png)
+
+*emacs-home* can be used to display a few widgets on a 'home-screen', which can be summoned on the press of a key-binding.
 
 ## Installation
 

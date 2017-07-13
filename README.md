@@ -47,10 +47,8 @@ By default, only the date-time widget is shown. One needs to set a few variables
 
 To see the work-day progress widget, set the day start and end times. These need to be set with numeric values in the format *hhmm*. Refer the below example.
 
-    (emacs-home-set-day-start-time
-        0800)
-    (emacs-home-set-day-end-time
-        1700)
+    (emacs-home-set-day-start-time 0800)
+    (emacs-home-set-day-end-time 1700)
 
 If the current time is between the above two times, a progress-bar is shown.
 

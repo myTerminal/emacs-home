@@ -127,7 +127,6 @@
   (let ((my-buffer (get-buffer-create emacs-home--buffer-name)))
     (set-window-buffer (get-buffer-window)
                        my-buffer)
-    (other-window 1)
     (emacs-home--render-controls)
     (setq emacs-home--refresh-timer
           (run-with-timer 1
@@ -135,14 +134,15 @@
                           'emacs-home--redraw))))
 
 (defun emacs-home--render-controls ()
-  (emacs-home--print-date-and-time)
-  (emacs-home--print-day-progress)
-  (emacs-home--print-pinned-files)
-  (emacs-home--print-pinned-functions)
-  (emacs-home-mode)
-  (emacs-home--apply-other-commands-bindings)
-  (emacs-home--apply-pinned-files-bindings)
-  (emacs-home--apply-pinned-functions-bindings))
+  (with-current-buffer (get-buffer-create emacs-home--buffer-name)
+    (emacs-home--print-date-and-time)
+    (emacs-home--print-day-progress)
+    (emacs-home--print-pinned-files)
+    (emacs-home--print-pinned-functions)
+    (emacs-home-mode)
+    (emacs-home--apply-other-commands-bindings)
+    (emacs-home--apply-pinned-files-bindings)
+    (emacs-home--apply-pinned-functions-bindings)))
 
 (defun emacs-home--print-date-and-time ()
   (insert (cl-concatenate 'string

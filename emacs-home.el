@@ -36,8 +36,8 @@
 ;; 
 ;; 1. Date and Time
 ;; 2. Work-day progress
-;; 3. Pinned files
-;; 4. Pinned functions
+;; 3. Favorite files
+;; 4. Favorite functions
 ;; 
 ;; Set a key-binding to open the configuration menu that displays all configured
 ;; configurations.
@@ -56,14 +56,14 @@
 ;; 
 ;; If the current time is between the above two times, a progress-bar is shown.
 ;; 
-;; To see the pinned files widget, use a snippet as shown below.
+;; To see the favorite files widget, use a snippet as shown below.
 ;; 
-;;     (emacs-home-set-pinned-files (list '("t" "~/to-do.org")
+;;     (emacs-home-set-favorite-files (list '("t" "~/to-do.org")
 ;;                                        '("i" "~/Documents/work.md")))
 ;; 
-;; To see the pinned functions widget, use a snippet as shown below.
+;; To see the favorite functions widget, use a snippet as shown below.
 ;; 
-;;     (emacs-home-set-pinned-functions (list '("s" snake)
+;;     (emacs-home-set-favorite-functions (list '("s" snake)
 ;;                                            '("c" calc)))
 ;; 
 ;; While on the home-screen, pressing `g` updates it and `q` closes it.
@@ -95,10 +95,10 @@
 (defvar emacs-home--data-day-end-time
   nil)
 
-(defvar emacs-home--data-pinned-files
+(defvar emacs-home--data-favorite-files
   nil)
 
-(defvar emacs-home--data-pinned-functions
+(defvar emacs-home--data-favorite-functions
   nil)
 
 ;;;###autoload
@@ -112,13 +112,13 @@
         time))
 
 ;;;###autoload
-(defun emacs-home-set-pinned-files (files)
-  (setq emacs-home--data-pinned-files
+(defun emacs-home-set-favorite-files (files)
+  (setq emacs-home--data-favorite-files
         files))
 
 ;;;###autoload
-(defun emacs-home-set-pinned-functions (functions)
-  (setq emacs-home--data-pinned-functions
+(defun emacs-home-set-favorite-functions (functions)
+  (setq emacs-home--data-favorite-functions
         functions))
 
 ;;;###autoload
@@ -137,12 +137,12 @@
   (with-current-buffer (get-buffer-create emacs-home--buffer-name)
     (emacs-home--print-date-and-time)
     (emacs-home--print-day-progress)
-    (emacs-home--print-pinned-files)
-    (emacs-home--print-pinned-functions)
+    (emacs-home--print-favorite-files)
+    (emacs-home--print-favorite-functions)
     (emacs-home-mode)
     (emacs-home--apply-other-commands-bindings)
-    (emacs-home--apply-pinned-files-bindings)
-    (emacs-home--apply-pinned-functions-bindings)))
+    (emacs-home--apply-favorite-files-bindings)
+    (emacs-home--apply-favorite-functions-bindings)))
 
 (defun emacs-home--print-date-and-time ()
   (insert (cl-concatenate 'string
@@ -204,25 +204,25 @@
                                         start-minutes)))
           (t nil))))
 
-(defun emacs-home--print-pinned-files ()
-  (cond ((not (null emacs-home--data-pinned-files))
+(defun emacs-home--print-favorite-files ()
+  (cond ((not (null emacs-home--data-favorite-files))
          (progn
            (insert (cl-concatenate 'string
                                    "\n"
-                                   (propertize "Pinned files:" 'face '(:height 1.5 :underline t))
+                                   (propertize "Favorite files:" 'face '(:height 1.5 :underline t))
                                    "\n\n"))
            (mapc 'emacs-home--display-controls-binding
-                 emacs-home--data-pinned-files)))))
+                 emacs-home--data-favorite-files)))))
 
-(defun emacs-home--print-pinned-functions ()
-  (cond ((not (null emacs-home--data-pinned-functions))
+(defun emacs-home--print-favorite-functions ()
+  (cond ((not (null emacs-home--data-favorite-functions))
          (progn
            (insert (cl-concatenate 'string
                                    "\n"
-                                   (propertize "Pinned functions:" 'face '(:height 1.5 :underline t))
+                                   (propertize "Favorite functions:" 'face '(:height 1.5 :underline t))
                                    "\n\n"))
            (mapc 'emacs-home--display-controls-binding
-                 emacs-home--data-pinned-functions)))))
+                 emacs-home--data-favorite-functions)))))
 
 (defun emacs-home--display-controls-binding (object)
   (insert (cl-concatenate 'string
@@ -249,26 +249,26 @@
                    (interactive)
                    (emacs-home--hide))))
 
-(defun emacs-home--apply-pinned-files-bindings ()
+(defun emacs-home--apply-favorite-files-bindings ()
   (mapc (lambda (object)
-          (funcall #'emacs-home--apply-pinned-file-binding
+          (funcall #'emacs-home--apply-favorite-file-binding
                    object))
-        emacs-home--data-pinned-files))
+        emacs-home--data-favorite-files))
 
-(defun emacs-home--apply-pinned-file-binding (object)
+(defun emacs-home--apply-favorite-file-binding (object)
   (local-set-key (kbd (car object))
                  (lambda ()
                    (interactive)
                    (emacs-home--hide)
                    (find-file (cadr object)))))
 
-(defun emacs-home--apply-pinned-functions-bindings ()
+(defun emacs-home--apply-favorite-functions-bindings ()
   (mapc (lambda (object)
-          (funcall #'emacs-home--apply-pinned-function-binding
+          (funcall #'emacs-home--apply-favorite-function-binding
                    object))
-        emacs-home--data-pinned-functions))
+        emacs-home--data-favorite-functions))
 
-(defun emacs-home--apply-pinned-function-binding (object)
+(defun emacs-home--apply-favorite-function-binding (object)
   (local-set-key (kbd (car object))
                  (lambda ()
                    (interactive)

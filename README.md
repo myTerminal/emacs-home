@@ -36,8 +36,8 @@ Currently *emacs-home* supports the following widgets:
 
 1. Date and Time
 2. Work-day progress
-3. Pinned files
-4. Pinned functions
+3. Favorite files
+4. Favorite functions
 
 Set a key-binding to open the configuration menu that displays all configured configurations.
 
@@ -52,14 +52,14 @@ To see the work-day progress widget, set the day start and end times. These need
 
 If the current time is between the above two times, a progress-bar is shown.
 
-To see the pinned files widget, use a snippet as shown below.
+To see the favorite files widget, use a snippet as shown below.
 
-    (emacs-home-set-pinned-files (list '("t" "~/to-do.org")
+    (emacs-home-set-favorite-files (list '("t" "~/to-do.org")
                                        '("i" "~/Documents/work.md")))
 
-To see the pinned functions widget, use a snippet as shown below.
+To see the favorite functions widget, use a snippet as shown below.
 
-    (emacs-home-set-pinned-functions (list '("s" snake)
+    (emacs-home-set-favorite-functions (list '("s" snake)
                                            '("c" calc)))
 
 While on the home-screen, pressing `g` updates it and `q` closes it.

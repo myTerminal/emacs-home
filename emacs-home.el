@@ -283,8 +283,11 @@
 
 (defun emacs-home--redraw ()
   (interactive)
-  (emacs-home--hide)
-  (emacs-home-show))
+  (with-current-buffer (get-buffer-create emacs-home--buffer-name)
+    (fundamental-mode)
+    (read-only-mode -1)
+    (erase-buffer))
+  (emacs-home--render-controls))
 
 (defun emacs-home--stop-timer ()
   (cancel-timer emacs-home--refresh-timer))

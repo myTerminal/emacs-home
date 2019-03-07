@@ -33,39 +33,39 @@
 ;;     (require 'emacs-home)
 ;;
 ;; Currently *emacs-home* supports the following widgets:
-;; 
+;;
 ;; 1. Date and Time
 ;; 2. Work-day progress
 ;; 3. Favorite files
 ;; 4. Favorite functions
-;; 
+;;
 ;; Set a key-binding to open the configuration menu that displays all configured
 ;; configurations.
-;; 
+;;
 ;;     (global-set-key (kbd "C-;") 'emacs-home-show)
-;; 
+;;
 ;; By default, only the date-time widget is shown. One needs to set a few
 ;; variables to see rest of the widgets.
-;; 
+;;
 ;; To see the work-day progress widget, set the day start and end times. These
 ;; need to be set with numeric values in the format *hhmm*. Refer the below
 ;; example.
-;; 
+;;
 ;;     (emacs-home-set-day-start-time 0800)
 ;;     (emacs-home-set-day-end-time 1700)
-;; 
+;;
 ;; If the current time is between the above two times, a progress-bar is shown.
-;; 
+;;
 ;; To see the favorite files widget, use a snippet as shown below.
-;; 
+;;
 ;;     (emacs-home-set-favorite-files (list '("t" "~/to-do.org")
 ;;                                        '("i" "~/Documents/work.md")))
-;; 
+;;
 ;; To see the favorite functions widget, use a snippet as shown below.
-;; 
+;;
 ;;     (emacs-home-set-favorite-functions (list '("s" snake)
 ;;                                            '("c" calc)))
-;; 
+;;
 ;; While on the home-screen, pressing `g` updates it and `q` closes it.
 ;;
 
@@ -124,14 +124,15 @@
 ;;;###autoload
 (defun emacs-home-show ()
   (interactive)
-  (let ((my-buffer (get-buffer-create emacs-home--buffer-name)))
-    (set-window-buffer (get-buffer-window)
-                       my-buffer)
-    (emacs-home--render-controls)
-    (setq emacs-home--refresh-timer
-          (run-with-timer 1
-                          1
-                          'emacs-home--redraw))))
+  (cond ((get-buffer emacs-home--buffer-name) (emacs-home--hide))
+        (t (let ((my-buffer (get-buffer-create emacs-home--buffer-name)))
+             (set-window-buffer (get-buffer-window)
+                                my-buffer)
+             (emacs-home--render-controls)
+             (setq emacs-home--refresh-timer
+                   (run-with-timer 1
+                                   1
+                                   'emacs-home--redraw))))))
 
 (defun emacs-home--render-controls ()
   (with-current-buffer (get-buffer-create emacs-home--buffer-name)
@@ -228,7 +229,7 @@
   (insert (cl-concatenate 'string
                           (propertize (cl-concatenate 'string
                                                       " "
-                                                      (nth 0 
+                                                      (nth 0
                                                            object)
                                                       " ")
                                       'face
@@ -294,8 +295,8 @@
 (defun emacs-home--stop-timer ()
   (cancel-timer emacs-home--refresh-timer))
 
-(define-derived-mode emacs-home-mode 
-  special-mode 
+(define-derived-mode emacs-home-mode
+  special-mode
   "emacs-home"
   :abbrev-table nil
   :syntax-table nil

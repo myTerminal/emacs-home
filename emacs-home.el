@@ -46,16 +46,16 @@
 ;;     (global-set-key (kbd "C-;") 'emacs-home-show)
 ;;
 ;; By default, only the date-time widget is shown. One needs to set a few
-;; variables to see rest of the widgets.
+;; variables to see the rest of the widgets.
 ;;
 ;; To see the work-day progress widget, set the day start and end times. These
-;; need to be set with numeric values in the format *hhmm*. Refer the below
+;; need to be set with numeric values in the format *hhmm*. Refer to the below
 ;; example.
 ;;
 ;;     (emacs-home-set-day-start-time 0800)
 ;;     (emacs-home-set-day-end-time 1700)
 ;;
-;; If the current time is between the above two times, a progress-bar is shown.
+;; If the current time is between the above two times, a progress bar is shown.
 ;;
 ;; To see the favorite files widget, use a snippet as shown below.
 ;;
@@ -67,7 +67,7 @@
 ;;     (emacs-home-set-favorite-functions (list '("s" snake)
 ;;                                            '("c" calc)))
 ;;
-;; While on the home-screen, pressing `g` updates it and `q` closes it.
+;; While on the home screen, pressing `g` updates it and `q` closes it.
 ;;
 
 ;;; Commentary:

@@ -1,4 +1,4 @@
-;;; emacs-home.el --- A home-screen for Emacs -*- lexical-binding: t; coding: utf-8; -*-
+;;; emacs-home.el --- A home-screen for Emacs -*- lexical-binding: t; -*-
 
 ;; This file is not part of Emacs
 

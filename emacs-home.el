@@ -7,7 +7,7 @@
 ;; Keywords: convenience, shortcuts
 ;; Maintainer: Mohammed Ismail Ansari <team.terminal@gmail.com>
 ;; Created: 2017/06/24
-;; Package-Requires: ((emacs "24") (cl-lib "0.5"))
+;; Package-Requires: ((emacs "24"))
 ;; Description: A home-screen for Emacs
 ;; URL: http://ismail.teamfluxion.com
 ;; Compatibility: Emacs24
@@ -82,8 +82,6 @@
 
 ;;; Code:
 
-(require 'cl-lib)
-
 (defvar emacs-home--buffer-name
   " *emacs-home*")
 
@@ -147,38 +145,33 @@
     (emacs-home--apply-favorite-functions-bindings)))
 
 (defun emacs-home--print-date-and-time ()
-  (insert (cl-concatenate 'string
-                          (propertize (format-time-string "%A, %d %B %Y")
-                                      'face
-                                      '(:height 2.0))
-                          "\n\n"))
-  (insert (cl-concatenate 'string
-                          (propertize (format-time-string "%H:%M:%S")
-                                      'face
-                                      '(:height 4.0 :inverse-video t))
-                          "\n\n")))
+  (insert (concat (propertize (format-time-string "%A, %d %B %Y")
+                              'face
+                              '(:height 2.0))
+                  "\n\n"))
+  (insert (concat (propertize (format-time-string "%H:%M:%S")
+                              'face
+                              '(:height 4.0 :inverse-video t))
+                  "\n\n")))
 
 (defun emacs-home--print-day-progress ()
   (cond ((not (or (null emacs-home--data-day-start-time)
                   (null emacs-home--data-day-end-time)))
          (let ((day-progress-ratio (emacs-home--get-day-progress)))
-           (insert (cl-concatenate 'string
-                                   (make-string (window-width)
-                                                ?*)
-                                   "\n"))
-           (insert (cl-concatenate 'string
-                                   (propertize (cond ((not (null day-progress-ratio))
-                                                      (make-string (truncate (* (window-width)
-                                                                                day-progress-ratio))
-                                                                   ?*))
-                                                     (t "Outside working hours"))
-                                               'face
-                                               '(:inverse-video t))
-                                   "\n"))
-           (insert (cl-concatenate 'string
-                                   (make-string (window-width)
-                                                ?*)
-                                   "\n"))))))
+           (insert (concat (make-string (window-width)
+                                        ?*)
+                           "\n"))
+           (insert (concat (propertize (cond ((not (null day-progress-ratio))
+                                              (make-string (truncate (* (window-width)
+                                                                        day-progress-ratio))
+                                                           ?*))
+                                             (t "Outside working hours"))
+                                       'face
+                                       '(:inverse-video t))
+                           "\n"))
+           (insert (concat (make-string (window-width)
+                                        ?*)
+                           "\n"))))))
 
 (defun emacs-home--get-day-progress ()
   (let ((start-minutes (+ (* 60
@@ -209,35 +202,31 @@
 (defun emacs-home--print-favorite-files ()
   (cond ((not (null emacs-home--data-favorite-files))
          (progn
-           (insert (cl-concatenate 'string
-                                   "\n"
-                                   (propertize "Favorite files:" 'face '(:height 1.5 :underline t))
-                                   "\n\n"))
+           (insert (concat "\n"
+                           (propertize "Favorite files:" 'face '(:height 1.5 :underline t))
+                           "\n\n"))
            (mapc 'emacs-home--display-controls-binding
                  emacs-home--data-favorite-files)))))
 
 (defun emacs-home--print-favorite-functions ()
   (cond ((not (null emacs-home--data-favorite-functions))
          (progn
-           (insert (cl-concatenate 'string
-                                   "\n"
-                                   (propertize "Favorite functions:" 'face '(:height 1.5 :underline t))
-                                   "\n\n"))
+           (insert (concat "\n"
+                           (propertize "Favorite functions:" 'face '(:height 1.5 :underline t))
+                           "\n\n"))
            (mapc 'emacs-home--display-controls-binding
                  emacs-home--data-favorite-functions)))))
 
 (defun emacs-home--display-controls-binding (object)
-  (insert (cl-concatenate 'string
-                          (propertize (cl-concatenate 'string
-                                                      " "
-                                                      (nth 0
-                                                           object)
-                                                      " ")
-                                      'face
-                                      '(:box t))
-                          " "
-                          (emacs-home--get-displayable-symbol (cadr object))
-                          "\n")))
+  (insert (concat (propertize (concat " "
+                                      (nth 0
+                                           object)
+                                      " ")
+                              'face
+                              '(:box t))
+                  " "
+                  (emacs-home--get-displayable-symbol (cadr object))
+                  "\n")))
 
 (defun emacs-home--get-displayable-symbol (item)
   (cond ((symbolp item) (symbol-name item))

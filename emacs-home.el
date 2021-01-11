@@ -203,7 +203,7 @@
   (cond ((not (null emacs-home--data-favorite-files))
          (progn
            (insert (concat "\n"
-                           (propertize "Favorite files:" 'face '(:height 1.5 :underline t))
+                           (propertize "Favorite files:" 'face '(:height 2.0 :underline t))
                            "\n\n"))
            (mapc 'emacs-home--display-controls-binding
                  emacs-home--data-favorite-files)))))
@@ -212,7 +212,7 @@
   (cond ((not (null emacs-home--data-favorite-functions))
          (progn
            (insert (concat "\n"
-                           (propertize "Favorite functions:" 'face '(:height 1.5 :underline t))
+                           (propertize "Favorite functions:" 'face '(:height 2.0 :underline t))
                            "\n\n"))
            (mapc 'emacs-home--display-controls-binding
                  emacs-home--data-favorite-functions)))))
@@ -223,9 +223,11 @@
                                            object)
                                       " ")
                               'face
-                              '(:box t))
+                              '(:height 1.5 :box t))
                   " "
-                  (emacs-home--get-displayable-symbol (cadr object))
+                  (propertize (emacs-home--get-displayable-symbol (cadr object))
+                              'face
+                              '(:height 1.5))
                   "\n")))
 
 (defun emacs-home--get-displayable-symbol (item)

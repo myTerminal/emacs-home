@@ -7,7 +7,7 @@
 ;; Keywords: convenience, shortcuts
 ;; Maintainer: Mohammed Ismail Ansari <team.terminal@gmail.com>
 ;; Created: 2017/06/24
-;; Package-Requires: ((emacs "24"))
+;; Package-Requires: ((emacs "24") (cl-lib "0.5")))
 ;; Description: A home-screen for Emacs
 ;; URL: http://ismail.teamfluxion.com
 ;; Compatibility: Emacs24
@@ -82,6 +82,8 @@
 
 ;;; Code:
 
+(require 'cl-lib)
+
 (defvar emacs-home--buffer-name
   " *emacs-home*")
 
@@ -122,170 +124,155 @@
 
 ;;;###autoload
 (defun emacs-home-show ()
+  "Shows emacs home."
   (interactive)
-  (cond ((get-buffer emacs-home--buffer-name) (emacs-home--hide))
+  (cl-flet* ((print-date-and-time ()
+                                  (insert (concat (propertize (format-time-string "%A, %d %B %Y")
+                                                              'face
+                                                              '(:height 2.0))
+                                                  "\n\n"))
+                                  (insert (concat (propertize (format-time-string "%H:%M:%S")
+                                                              'face
+                                                              '(:height 4.0 :inverse-video t))
+                                                  "\n\n")))
+             (get-day-progress ()
+                               (let ((start-minutes (+ (* 60
+                                                          (truncate (/ emacs-home--data-day-start-time
+                                                                       100)))
+                                                       (mod emacs-home--data-day-start-time
+                                                            100)))
+                                     (end-minutes (+ (* 60
+                                                        (truncate (/ emacs-home--data-day-end-time
+                                                                     100)))
+                                                     (mod emacs-home--data-day-end-time
+                                                          100)))
+                                     (ellapsed-minutes (+ (* 60
+                                                             (string-to-number (format-time-string "%H")))
+                                                          (string-to-number (format-time-string "%M")))))
+                                 (cond ((and (> end-minutes
+                                                start-minutes)
+                                             (>= ellapsed-minutes
+                                                 start-minutes)
+                                             (<= ellapsed-minutes
+                                                 end-minutes)) (/ (* (- ellapsed-minutes
+                                                                        start-minutes)
+                                                 1.0)
+                                             (- end-minutes
+                                                start-minutes)))
+                                       (t nil))))
+             (print-day-progress ()
+                                 (cond ((not (or (null emacs-home--data-day-start-time)
+                                                 (null emacs-home--data-day-end-time)))
+                                        (let ((day-progress-ratio (get-day-progress)))
+                                          (insert (concat (make-string (window-width)
+                                                                       ?*)
+                                                          "\n"))
+                                          (insert (concat (propertize (cond ((not (null day-progress-ratio))
+                                                                             (make-string (truncate (* (window-width)
+                                                                                                       day-progress-ratio))
+                                                                                          ?*))
+                                                                            (t "Outside working hours"))
+                                                                      'face
+                                                                      '(:inverse-video t))
+                                                          "\n"))
+                                          (insert (concat (make-string (window-width)
+                                                                       ?*)
+                                                          "\n"))))))
+             (get-displayable-symbol (item)
+                                     (cond ((symbolp item) (symbol-name item))
+                                           (t item)))
+             (display-controls-binding (object)
+                                       (insert (concat (propertize (concat " "
+                                                                           (nth 0
+                                                                                object)
+                                                                           " ")
+                                                                   'face
+                                                                   '(:height 1.5 :box t))
+                                                       " "
+                                                       (propertize (get-displayable-symbol (cadr object))
+                                                                   'face
+                                                                   '(:height 1.5))
+                                                       "\n")))
+             (print-favorite-files ()
+                                   (cond ((not (null emacs-home--data-favorite-files))
+                                          (progn
+                                            (insert (concat "\n"
+                                                            (propertize "Favorite files:" 'face '(:height 2.0 :underline t))
+                                                            "\n\n"))
+                                            (mapc #'display-controls-binding
+                                                  emacs-home--data-favorite-files)))))
+             (print-favorite-functions ()
+                                       (cond ((not (null emacs-home--data-favorite-functions))
+                                              (progn
+                                                (insert (concat "\n"
+                                                                (propertize "Favorite functions:" 'face '(:height 2.0 :underline t))
+                                                                "\n\n"))
+                                                (mapc #'display-controls-binding
+                                                      emacs-home--data-favorite-functions)))))
+             (apply-other-commands-bindings ()
+                                            (local-set-key (kbd "g")
+                                                           'home-redraw)
+                                            (local-set-key (kbd "q")
+                                                           (lambda ()
+                                                             (interactive)
+                                                             (home-hide))))
+             (apply-favorite-file-binding (object)
+                                          (local-set-key (kbd (car object))
+                                                         (lambda ()
+                                                           (interactive)
+                                                           (home-hide)
+                                                           (find-file (cadr object)))))
+             (apply-favorite-files-bindings ()
+                                           (mapc (lambda (object)
+                                                   (funcall #'apply-favorite-file-binding
+                                                            object))
+                                                 emacs-home--data-favorite-files))
+             (apply-favorite-function-binding (object)
+                                              (local-set-key (kbd (car object))
+                                                             (lambda ()
+                                                               (interactive)
+                                                               (home-hide)
+                                                               (funcall (cadr object)))))
+             (apply-favorite-functions-bindings ()
+                                                (mapc (lambda (object)
+                                                        (funcall #'apply-favorite-function-binding
+                                                                 object))
+                                                      emacs-home--data-favorite-functions))
+             (render-controls ()
+                              (with-current-buffer (get-buffer-create emacs-home--buffer-name)
+                                (print-date-and-time)
+                                (print-day-progress)
+                                (print-favorite-files)
+                                (print-favorite-functions)
+                                (emacs-home-mode)
+                                (apply-other-commands-bindings)
+                                (apply-favorite-files-bindings)
+                                (apply-favorite-functions-bindings)))
+             (stop-timer ()
+                         (cancel-timer emacs-home--refresh-timer))
+             (home-hide ()
+                        (let ((my-window (get-buffer-window (get-buffer-create emacs-home--buffer-name))))
+                          (stop-timer)
+                          (cond ((windowp my-window)
+                                 (kill-buffer (get-buffer-create emacs-home--buffer-name))))))
+             (home-redraw ()
+                          (interactive)
+                          (cond ((get-buffer emacs-home--buffer-name)
+                                 (progn (with-current-buffer (get-buffer-create emacs-home--buffer-name)
+                                          (fundamental-mode)
+                                          (read-only-mode -1)
+                                          (erase-buffer))
+                                        (render-controls)))
+                                (t (stop-timer)))))
+  (cond ((get-buffer emacs-home--buffer-name) (home-hide))
         (t (let ((my-buffer (get-buffer-create emacs-home--buffer-name)))
              (set-window-buffer (get-buffer-window)
                                 my-buffer)
-             (emacs-home--render-controls)
+             (render-controls)
              (setq emacs-home--refresh-timer
                    (run-with-timer 1
                                    1
-                                   'emacs-home--redraw))))))
-
-(defun emacs-home--render-controls ()
-  (with-current-buffer (get-buffer-create emacs-home--buffer-name)
-    (emacs-home--print-date-and-time)
-    (emacs-home--print-day-progress)
-    (emacs-home--print-favorite-files)
-    (emacs-home--print-favorite-functions)
-    (emacs-home-mode)
-    (emacs-home--apply-other-commands-bindings)
-    (emacs-home--apply-favorite-files-bindings)
-    (emacs-home--apply-favorite-functions-bindings)))
-
-(defun emacs-home--print-date-and-time ()
-  (insert (concat (propertize (format-time-string "%A, %d %B %Y")
-                              'face
-                              '(:height 2.0))
-                  "\n\n"))
-  (insert (concat (propertize (format-time-string "%H:%M:%S")
-                              'face
-                              '(:height 4.0 :inverse-video t))
-                  "\n\n")))
-
-(defun emacs-home--print-day-progress ()
-  (cond ((not (or (null emacs-home--data-day-start-time)
-                  (null emacs-home--data-day-end-time)))
-         (let ((day-progress-ratio (emacs-home--get-day-progress)))
-           (insert (concat (make-string (window-width)
-                                        ?*)
-                           "\n"))
-           (insert (concat (propertize (cond ((not (null day-progress-ratio))
-                                              (make-string (truncate (* (window-width)
-                                                                        day-progress-ratio))
-                                                           ?*))
-                                             (t "Outside working hours"))
-                                       'face
-                                       '(:inverse-video t))
-                           "\n"))
-           (insert (concat (make-string (window-width)
-                                        ?*)
-                           "\n"))))))
-
-(defun emacs-home--get-day-progress ()
-  (let ((start-minutes (+ (* 60
-                             (truncate (/ emacs-home--data-day-start-time
-                                          100)))
-                          (mod emacs-home--data-day-start-time
-                               100)))
-        (end-minutes (+ (* 60
-                           (truncate (/ emacs-home--data-day-end-time
-                                        100)))
-                        (mod emacs-home--data-day-end-time
-                             100)))
-        (ellapsed-minutes (+ (* 60
-                                (string-to-number (format-time-string "%H")))
-                             (string-to-number (format-time-string "%M")))))
-    (cond ((and (> end-minutes
-                   start-minutes)
-                (>= ellapsed-minutes
-                    start-minutes)
-                (<= ellapsed-minutes
-                    end-minutes)) (/ (* (- ellapsed-minutes
-                                           start-minutes)
-                                        1.0)
-                                     (- end-minutes
-                                        start-minutes)))
-          (t nil))))
-
-(defun emacs-home--print-favorite-files ()
-  (cond ((not (null emacs-home--data-favorite-files))
-         (progn
-           (insert (concat "\n"
-                           (propertize "Favorite files:" 'face '(:height 2.0 :underline t))
-                           "\n\n"))
-           (mapc 'emacs-home--display-controls-binding
-                 emacs-home--data-favorite-files)))))
-
-(defun emacs-home--print-favorite-functions ()
-  (cond ((not (null emacs-home--data-favorite-functions))
-         (progn
-           (insert (concat "\n"
-                           (propertize "Favorite functions:" 'face '(:height 2.0 :underline t))
-                           "\n\n"))
-           (mapc 'emacs-home--display-controls-binding
-                 emacs-home--data-favorite-functions)))))
-
-(defun emacs-home--display-controls-binding (object)
-  (insert (concat (propertize (concat " "
-                                      (nth 0
-                                           object)
-                                      " ")
-                              'face
-                              '(:height 1.5 :box t))
-                  " "
-                  (propertize (emacs-home--get-displayable-symbol (cadr object))
-                              'face
-                              '(:height 1.5))
-                  "\n")))
-
-(defun emacs-home--get-displayable-symbol (item)
-  (cond ((symbolp item) (symbol-name item))
-        (t item)))
-
-(defun emacs-home--apply-other-commands-bindings ()
-  (local-set-key (kbd "g")
-                 'emacs-home--redraw)
-  (local-set-key (kbd "q")
-                 (lambda ()
-                   (interactive)
-                   (emacs-home--hide))))
-
-(defun emacs-home--apply-favorite-files-bindings ()
-  (mapc (lambda (object)
-          (funcall #'emacs-home--apply-favorite-file-binding
-                   object))
-        emacs-home--data-favorite-files))
-
-(defun emacs-home--apply-favorite-file-binding (object)
-  (local-set-key (kbd (car object))
-                 (lambda ()
-                   (interactive)
-                   (emacs-home--hide)
-                   (find-file (cadr object)))))
-
-(defun emacs-home--apply-favorite-functions-bindings ()
-  (mapc (lambda (object)
-          (funcall #'emacs-home--apply-favorite-function-binding
-                   object))
-        emacs-home--data-favorite-functions))
-
-(defun emacs-home--apply-favorite-function-binding (object)
-  (local-set-key (kbd (car object))
-                 (lambda ()
-                   (interactive)
-                   (emacs-home--hide)
-                   (funcall (cadr object)))))
-
-(defun emacs-home--hide ()
-  (let ((my-window (get-buffer-window (get-buffer-create emacs-home--buffer-name))))
-    (emacs-home--stop-timer)
-    (cond ((windowp my-window)
-           (kill-buffer (get-buffer-create emacs-home--buffer-name))))))
-
-(defun emacs-home--redraw ()
-  (interactive)
-  (cond ((get-buffer emacs-home--buffer-name)
-         (progn (with-current-buffer (get-buffer-create emacs-home--buffer-name)
-                  (fundamental-mode)
-                  (read-only-mode -1)
-                  (erase-buffer))
-                (emacs-home--render-controls)))
-        (t (emacs-home--stop-timer))))
-
-(defun emacs-home--stop-timer ()
-  (cancel-timer emacs-home--refresh-timer))
+                                   #'home-redraw)))))))
 
 (define-derived-mode emacs-home-mode
   special-mode

@@ -7,7 +7,7 @@
 ;; Keywords: convenience, shortcuts
 ;; Maintainer: Mohammed Ismail Ansari <team.terminal@gmail.com>
 ;; Created: 2017/06/24
-;; Package-Requires: ((emacs "24") (cl-lib "0.5")))
+;; Package-Requires: ((emacs "24") (cl-lib "0.5"))
 ;; Description: A home-screen for Emacs
 ;; URL: http://ismail.teamfluxion.com
 ;; Compatibility: Emacs24
